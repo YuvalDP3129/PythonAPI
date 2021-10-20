@@ -17,3 +17,5 @@ delete_task_by_id = ("DELETE from todo_tasks_tbl where id = %s")
 update_task = ("UPDATE todo_tasks_tbl set task_title = %s, task_description = %s, due_date = %s, updated_at=CURRENT_TIMESTAMP where id = %s")
 
 update_task_status = ("UPDATE todo_tasks_tbl set task_status = %s, updated_at = CURRENT_TIMESTAMP where id = %s")
+
+get_all_tasks_by_lists_query = ("SELECT * from todo_tasks_tbl where list_id = %s")

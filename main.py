@@ -3,8 +3,7 @@ import schema
 from db import cnx
 from queries import (fetch_lists_query, delete_list_item_query, add_lists_query,
                     update_list_item_query, add_task_query, get_tasks_by_list, delete_task_by_id,
-                    update_task, update_task_status)
-import json
+                    update_task, update_task_status, get_all_tasks_by_lists_query)
 
 app = FastAPI()
 
@@ -110,3 +109,31 @@ async def updateTaskStatus(task_id: int, status: str):
     cnx.commit()
     cursor.close()
     return { "message": f"Status updated.", "status": "success" }
+
+@app.get('/fetch-lists')
+async def fetchListsWithTasks(page: int, items: int):
+    cursor = cnx.cursor()
+    from_record = (page - 1) * items
+    to_record = from_record + items
+    query_params = (from_record, to_record)
+    cursor.execute(fetch_lists_query, query_params)
+    row_headers=[x[0] for x in cursor.description]
+    result = cursor.fetchall()
+    lists_array = []
+    for row in result:
+        lists_array.append(dict(zip(row_headers, row)))
+
+    for i, list in enumerate(lists_array):
+        tasks_cursor = cnx.cursor()
+        print('list', list)
+        tasks_cursor.execute(get_all_tasks_by_lists_query, (list["id"],))
+        task_row_headers=[x[0] for x in tasks_cursor.description]
+        task_result = tasks_cursor.fetchall()
+        task_array = []
+        for task_record in task_result:
+            task_array.append(dict(zip(task_row_headers, task_record)))
+
+        lists_array[i]["tasks"] = task_array
+        
+    cursor.close()
+    return { "data": lists_array, "status": "success" }

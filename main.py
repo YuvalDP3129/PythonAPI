@@ -123,17 +123,14 @@ async def fetchListsWithTasks(page: int, items: int):
     for row in result:
         lists_array.append(dict(zip(row_headers, row)))
 
-    for i, list in enumerate(lists_array):
-        tasks_cursor = cnx.cursor()
-        print('list', list)
-        tasks_cursor.execute(get_all_tasks_by_lists_query, (list["id"],))
-        task_row_headers=[x[0] for x in tasks_cursor.description]
-        task_result = tasks_cursor.fetchall()
+    for i, list in enumerate(lists_array):        
+        cursor.execute(get_all_tasks_by_lists_query, (list["id"],))
+        task_row_headers=[x[0] for x in cursor.description]
+        task_result = cursor.fetchall()
         task_array = []
         for task_record in task_result:
             task_array.append(dict(zip(task_row_headers, task_record)))
-
-        lists_array[i]["tasks"] = task_array
-        
+            
+        lists_array[i]["tasks"] = task_array        
     cursor.close()
     return { "data": lists_array, "status": "success" }
